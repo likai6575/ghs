@@ -81,7 +81,7 @@ public class GHSController {
         }
 
 
-        return R.ok(ghsService.selectAllSourceRss());
+        return R.ok("下载完成");
     }
 
 }
