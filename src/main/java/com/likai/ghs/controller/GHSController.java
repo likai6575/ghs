@@ -5,6 +5,9 @@ import com.likai.ghs.PO.FileInfo;
 import com.likai.ghs.PO.SourceRss;
 import com.likai.ghs.service.GHSService;
 import com.likai.ghs.utils.FileUtils;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
@@ -34,8 +38,16 @@ public class GHSController {
         List<SourceRss> sourceRsses=ghsService.selectAllSourceRss();
         for (SourceRss sourceRss:sourceRsses
              ) {
+            //更换使用okhttp3
+            OkHttpClient client = new OkHttpClient().newBuilder()
+                    .build();
+            Request request = new Request.Builder()
+                    .url(sourceRss.getUrl())
+                    .method("GET", null)
+                    .build();
+            Response response = client.newCall(request).execute();
             Document document=null;
-            document = Jsoup.connect(sourceRss.getUrl()).get();
+            document =Jsoup.parse(response.body().string());
             //获取lastBuildDate和缓存中的对比 以检测是否为更新后的信息
             String lastBuildDate = document.getElementsByTag("lastBuildDate").get(0).text();
 
@@ -75,8 +87,15 @@ public class GHSController {
                 fileInfo.setSourceRss(sourceRss.getId());
                 fileInfo.setSourceLink(link);
 
+                try{
+                    FileUtils.downloadPic(url, sourceRss.getSaveDir(),fileName);
+                    fileInfo.setStatus(1);
+                    fileInfo.setMsg("下载完成");
+                }catch (FileNotFoundException e){
+                    fileInfo.setStatus(-1);
+                    fileInfo.setMsg(e.toString());
+                }
 
-                FileUtils.downloadPic(url, sourceRss.getSaveDir(),fileName);
                 ghsService.insertFileInfo(fileInfo);
             }
         }

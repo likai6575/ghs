@@ -20,5 +20,7 @@ public class FileInfo {
     private String title;
     private Integer sourceRss;
     private String src;
+    private Integer status;
+    private String msg;
 
 }
