@@ -34,7 +34,8 @@ public class GHSController {
         List<SourceRss> sourceRsses=ghsService.selectAllSourceRss();
         for (SourceRss sourceRss:sourceRsses
              ) {
-            Document document = Jsoup.connect(sourceRss.getUrl()).get();
+            Document document=null;
+            document = Jsoup.connect(sourceRss.getUrl()).get();
             //获取lastBuildDate和缓存中的对比 以检测是否为更新后的信息
             String lastBuildDate = document.getElementsByTag("lastBuildDate").get(0).text();
 
